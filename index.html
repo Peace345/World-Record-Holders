@@ -1,12 +1,212 @@
 <!DOCTYPE html>
-<html>
-<body style="background:black; color:white; text-align:center;">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>World Record Holders</title>
 
-<h1>My Music</h1>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
 
-<audio controls>
-  <source src="song1.mp3" type="audio/mpeg">
-</audio>
+    #player {
+      padding: 20px;
+    }
+
+    #cover {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .song {
+      padding: 10px;
+      margin: 5px auto;
+      width: 60%;
+      background: #222;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .song:hover {
+      background: #333;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="player">
+
+  <!-- BACK BUTTON -->
+  <button onclick="goBack()">⬅ Back to Library</button>
+
+  <!-- ALBUM INFO -->
+  <h1 id="albumTitle">World Record Holders</h1>
+  <img id="cover" src="" alt="cover">
+
+  <!-- SONG LIST -->
+  <div id="songs"></div>
+
+</div>
+
+<audio id="audio"></audio>
+
+<button id="playPauseBtn" onclick="togglePlay()">▶️ Play</button>
+
+<script>
+
+let currentAlbum = {
+  name: "World Record Holders",
+  cover: "worldrecordholderscover.jpg",
+  songs: [
+      { file: "worldrecordholdersintro.mp3", title: "Intro", artist: "Kanye West, GLC, Timmy G" },
+      { file: "nothingsgonnastopme.mp3", title: "Nothing's Gonna Stop Me", artist: "Kanye West, GLC, Timmy G" },
+      { file: "worldrecordholders.mp3", title: "World Record Holders", artist: "Kanye West, GLC, Timmy G" },
+      { file: "demguyz.mp3", title: "Dem Guyz", artist: "Kanye West, GLC, Timmy G" },
+      { file: "ghettosenorita.mp3", title: "Ghetto Senorita", artist: "Kanye West, GLC, Timmy G, Miss Criss, Shayla G" },
+      { file: "10inabenz.mp3", title: "10 In A Benz", artist: "Kanye West, GLC, Timmy G, Rhymefest" },
+      { file: "letemin.mp3", title: "Let 'Em In", artist: "Kanye West, GLC, Timmy G" },
+  ]
+};
+
+// BACK BUTTON (PUT MAIN REPO LINK HERE)
+function goBack() {
+  window.location.href = "https://peace345.github.io/Ye-Unreleased-Archive/"; // <-- paste main library repo URL here
+}
+
+// LOAD ALBUM
+document.getElementById("albumTitle").innerText = currentAlbum.name;
+document.getElementById("cover").src = currentAlbum.cover;
+
+buildSongs();
+
+// BUILD SONG LIST
+function buildSongs() {
+  const songsDiv = document.getElementById("songs");
+  songsDiv.innerHTML = "";
+
+  currentAlbum.songs.forEach((song, i) => {
+    const div = document.createElement("div");
+    div.className = "song";
+
+    div.innerHTML = `
+      <strong>${song.title}</strong><br>
+      <small>${song.artist || ""}</small>
+    `;
+
+    div.onclick = () => playSong(i);
+
+    songsDiv.appendChild(div);
+  });
+}
+
+// PLAY SONG
+function playSong(i) {
+  currentIndex = i;
+
+  const song = currentAlbum.songs[i];
+
+  window.audio.src = song.file;
+  window.audio.play();
+
+  updateMediaSession(song, currentAlbum);
+}
+
+function updateMediaSession(song) {
+  if (!('mediaSession' in navigator)) return;
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: song.title,
+    artist: song.artist,
+    album: currentAlbum.name,
+    artwork: [
+      { src: currentAlbum.cover, sizes: "512x512", type: "image/jpg" }
+    ]
+  });
+
+  navigator.mediaSession.setActionHandler("play", () => {
+    audio.play();
+  });
+
+  navigator.mediaSession.setActionHandler("pause", () => {
+    audio.pause();
+  });
+
+  navigator.mediaSession.setActionHandler("previoustrack", () => {
+    if (!currentAlbum) return;
+    currentIndex = (currentIndex - 1 + currentAlbum.songs.length) % currentAlbum.songs.length;
+    playSong(currentIndex);
+  });
+
+  navigator.mediaSession.setActionHandler("nexttrack", () => {
+    if (!currentAlbum) return;
+    currentIndex = (currentIndex + 1) % currentAlbum.songs.length;
+    playSong(currentIndex);
+  });
+}
+
+  if ("mediaSession" in navigator) {
+
+  navigator.mediaSession.setActionHandler("play", async () => {
+    await audio.play();
+  });
+
+  navigator.mediaSession.setActionHandler("pause", () => {
+    audio.pause();
+  });
+
+}
+
+function togglePlay() {
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+
+  audio.addEventListener("play", () => {
+  document.getElementById("playPauseBtn").innerText = "⏸️ Pause";
+});
+
+audio.addEventListener("pause", () => {
+  document.getElementById("playPauseBtn").innerText = "▶️ Play";
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  const audio = document.getElementById("audio");
+
+  audio.addEventListener("ended", () => {
+    if (!currentAlbum) return;
+
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < currentAlbum.songs.length) {
+      playSong(nextIndex);
+    } else {
+      playSong(0);
+    }
+  });
+
+  // expose audio globally so playSong can use it safely
+  window.audio = audio;
+});
+  
+</script>
 
 </body>
 </html>
